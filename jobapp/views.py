@@ -18,50 +18,46 @@ User = get_user_model()
 
 
 def home_view(request):
-
     published_jobs = Job.objects.filter(is_published=True).order_by('-timestamp')
     jobs = published_jobs.filter(is_closed=False)
     total_candidates = User.objects.filter(role='employee').count()
     total_companies = User.objects.filter(role='employer').count()
     paginator = Paginator(jobs, 3)
-    page_number = request.GET.get('page',None)
+    page_number = request.GET.get('page', None)
     page_obj = paginator.get_page(page_number)
 
-    if request.is_ajax():
-        job_lists=[]
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        job_lists = []
         job_objects_list = page_obj.object_list.values()
         for job_list in job_objects_list:
             job_lists.append(job_list)
-        
 
         next_page_number = None
         if page_obj.has_next():
             next_page_number = page_obj.next_page_number()
 
-        prev_page_number = None       
+        prev_page_number = None
         if page_obj.has_previous():
             prev_page_number = page_obj.previous_page_number()
 
-        data={
-            'job_lists':job_lists,
-            'current_page_no':page_obj.number,
-            'next_page_number':next_page_number,
-            'no_of_page':paginator.num_pages,
-            'prev_page_number':prev_page_number
-        }    
+        data = {
+            'job_lists': job_lists,
+            'current_page_no': page_obj.number,
+            'next_page_number': next_page_number,
+            'no_of_page': paginator.num_pages,
+            'prev_page_number': prev_page_number
+        }
         return JsonResponse(data)
-    
-    context = {
 
-    'total_candidates': total_candidates,
-    'total_companies': total_companies,
-    'total_jobs': len(jobs),
-    'total_completed_jobs':len(published_jobs.filter(is_closed=True)),
-    'page_obj': page_obj
+    context = {
+        'total_candidates': total_candidates,
+        'total_companies': total_companies,
+        'total_jobs': len(jobs),
+        'total_completed_jobs': len(published_jobs.filter(is_closed=True)),
+        'page_obj': page_obj
     }
     print('ok')
     return render(request, 'jobapp/index.html', context)
-
 @cache_page(60 * 15)
 def job_list_View(request):
     """
