@@ -15,11 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path , include
+from django.views.i18n import set_language
  
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('jobapp.urls')),
     path('', include('account.urls')),
-    path('__debug__/', include('debug_toolbar.urls')),
+    path('i18n/', set_language, name='set_language'),
+    # path('__debug__/', include('debug_toolbar.urls')),
 
 ]
